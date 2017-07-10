@@ -51,6 +51,16 @@
                         m.drawSolution(sol);
                         m.textSolution(sol);
                     }
+                    else if(selector.value == "Astarec") {
+                        let sol = Astar(m, euclideanHeuristic);
+                        m.drawSolution(sol);
+                        m.textSolution(sol);
+                    }
+                    else if(selector.value == "Astarman") {
+                        let sol = Astar(m, manhattanHeuristic);
+                        m.drawSolution(sol);
+                        m.textSolution(sol);
+                    }
                    
                     maps.push(m);
                     clearInterval(k);
