@@ -22,11 +22,11 @@
             <i>p</i>: <input type="text" id="pinput" value="0.2"/>
             <b>dim</b>: <input type="text" id="diminput" value="20"/>
             <select name="Solver" id="selector">
+                <option value="all">All</option>
                 <option value="DFS">DFS</option>
                 <option value="BFS">BFS</option>
                 <option value="Astarec">A* Euclidean</option>
                 <option value="Astarman">A* Manhattan</option>
-                <option value="all">All</option>
             </select>
             <button onclick="generateMap()">Create</button>
             <button onclick="clearMaps()">Clear All</button>
@@ -36,9 +36,10 @@
         <script>
             var maps = new Array();
             function generateMap() {
-                let k = setInterval(function() {
+                // let k = setInterval(function() {
                     let m = new map(sandbox, parseFloat(pinput.value), parseInt(diminput.value));
                     m.generate();
+                    m.create();
                     m.draw();
                     m.text();
                     if(selector.value == "DFS") {
@@ -61,15 +62,51 @@
                         m.drawSolution(sol);
                         m.textSolution(sol);
                     }
+                    else if(selector.value == "all") {
+                        let sol = solveDFS(m);
+                        m.drawSolution(sol);
+                        m.textSolution(sol);
+                        let m2 = new map(sandbox, parseFloat(pinput.value), parseInt(diminput.value));
+                        //m2.generate();
+                        m2.create();
+                        m2.cells = m.cells;
+                        sol = solveBFS(m2);
+                        m2.draw();
+                        m2.text();
+                        m2.drawSolution(sol);
+                        m2.textSolution(sol);
+                        let m3 = new map(sandbox, parseFloat(pinput.value), parseInt(diminput.value));
+                        //m2.generate();
+                        m3.create();
+                        m3.cells = m.cells;
+                        sol = Astar(m3, euclideanHeuristic);
+                        m3.draw();
+                        m3.text();
+                        m3.drawSolution(sol);
+                        m3.textSolution(sol);
+                        let m4 = new map(sandbox, parseFloat(pinput.value), parseInt(diminput.value));
+                        //m2.generate();
+                        m4.create();
+                        m4.cells = m.cells;
+                        sol = Astar(m4, manhattanHeuristic);
+                        m4.draw();
+                        m4.text();
+                        m4.drawSolution(sol);
+                        m4.textSolution(sol);
+                    }
                    
                     maps.push(m);
-                    clearInterval(k);
-                }, 1);
+                //     clearInterval(k);
+                // }, 1);
                 
             }
             function clearMaps() {
                 maps = new Array();
                 sandbox.innerHTML = "";
+            }
+
+            function insertHeader(txt) {
+                sandbox.innerHTML += "<h2>" + txt + "</h2><br/>";
             }
         </script>
     </body>

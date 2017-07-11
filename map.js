@@ -32,6 +32,10 @@ class map {
         this.dim = dim; // dimension of the map
         this.parent = dv; // where the map will be displayed
         this.cells = new Array(); // Will be used to store how the map looks like
+        
+    }
+
+    create() {
         this.canvas = document.createElement("canvas"); // for visualisation purposes
         this.context = this.canvas.getContext('2d');// for visualisation purposes
         this.canvas.width = this.dim * cellsize;// for visualisation purposes
@@ -41,8 +45,9 @@ class map {
         this.textDiv.style.display = "inline-block";// to print map text
         this.textDiv.style.fontFamily = "Courier";// to print map text
         this.parent.append(this.textDiv);// to print map text
-    }
-    
+        this.parent.append(document.createElement("br"));
+    }    
+
     generate() {
         for(let i = 0; i < this.dim; i++) {
             this.cells[i] = new Array();
@@ -104,6 +109,25 @@ class map {
             this.textDiv.innerHTML += "<br/>";
         }
     }
+
+    outputtextSolution(sol) {
+        let txt = "";
+        let temp = this.cells.slice();
+        for(let i = 0; i < temp.length; i++) {
+            temp[i] = this.cells[i].slice();
+        }
+        while(sol != undefined) {
+            temp[sol.i][sol.j] = path;
+            sol = sol.parent;
+        }
+        for(let i = 0; i < this.dim; i++) {
+            for(let j = 0; j < this.dim; j++) {
+                txt += temp[i][j] + "\t";
+            }
+            txt += "<br/>";
+        }
+        return txt;
+    }
 };
 
 function createUnvisitedMap(dim) {
@@ -129,73 +153,58 @@ function v(i, j, p) { // creates a vector
     return new vector(i, j, p);
 }
 
-function solveDFS(m) { // find goal node using DFS, return undefined if nothing found
+var ia = [-1, 0, 1, 0];
+var ja = [0, 1, 0, -1];
+
+function solveDFS(m) { // find goal node using DFS, return undefined if nothing found. This DFS checks left then down, then right, then up
     let stack = new Array();
     let visited = createUnvisitedMap(m.dim);
-    stack.push(v(0, 0));
+    stack.push(v(0, 0)); // starting node
+    let t0 = performance.now();
     while(stack.length > 0) {
         let index = stack.pop();
         if(!visited[index.i][index.j]) {
             visited[index.i][index.j] = true;
             if(index.i + 1 == m.dim && index.j + 1 == m.dim) {
+                console.log(performance.now() - t0);
                 return index;
             }
-            for(let i = -1; i <= 1; i++) {
-                for(let j = -1; j <= 1; j++) {
-                    if(i == j || i == -j) continue;
-                    if(index.i + i >= 0 && index.j + j >= 0 && index.i + i < m.dim && index.j + j < m.dim) {
-                        let item = v(index.i + i, index.j + j, index);
-                        if(m.cells[item.i][item.j] != block)
-                            stack.push(item);
-                    }
+            for(let i = 0; i < 4; i++) {
+                let item = v(index.i + ia[i], index.j + ja[i], index);
+                if(item.i >= 0 && item.j >= 0 && item.i < m.dim && item.j < m.dim) {
+                    if(m.cells[item.i][item.j] != block)
+                        stack.push(item);
                 }
             }
         }
     }
+    console.log(performance.now() - t0);
 }
 
 function solveBFS(m) { // find goal node using BFS, return undefined if nothing found
     let queue = new Array();
     let visited = createUnvisitedMap(m.dim);
     queue.push(v(0, 0));
+    let t0 = performance.now();
     while(queue.length > 0) {
         let index = queue.shift();
         if(!visited[index.i][index.j]) {
             visited[index.i][index.j] = true;
             if(index.i + 1 == m.dim && index.j + 1 == m.dim) {
+                console.log(performance.now() - t0);
                 return index;
             }
-            for(let i = -1; i <= 1; i++) {
-                for(let j = -1; j <= 1; j++) {
-                    if(i == j || i == -j) continue;
-                    if(index.i + i >= 0 && index.j + j >= 0 && index.i + i < m.dim && index.j + j < m.dim) {
-                        let item = v(index.i + i, index.j + j, index);
+            for(let i = 0; i < 4; i++) {
+                let item = v(index.i + ia[i], index.j + ja[i], index);
+                if(item.i >= 0 && item.j >= 0 && item.i < m.dim && item.j < m.dim) {
                         if(m.cells[item.i][item.j] != block)
                             queue.push(item);
                     }
                 }
-            }
         }
     }
+    console.log(performance.now() - t0);
 }
-
-// class svector { // stores the indices of the cell and the g, h value
-//     constructor(i, j, g, h, parent) {
-//         this.i = i;
-//         this.j = j;
-//         this.g = g;
-//         this.h = h;
-//         this.parent = parent;
-//     }
-
-//     get f() {
-//         return this.g + this.h;
-//     }
-// }
-
-// function sv(i, j, g, h, parent) {
-//     return new svector(i, j, g, h, parent);
-// }
 
 function insert(list, item, f) { // inserts item to a sorted list. Javascript doesn't have a built in sorted list and I don't want to keep resorting
     if(list.length < 1) {
@@ -217,7 +226,6 @@ function insert(list, item, f) { // inserts item to a sorted list. Javascript do
         else if(f[list[mid].i][list[mid].j] > f[item.i][item.j]) {
             hi = mid - 1;
         }
-        //console.log(f[list[mid].i, list[mid].j] + ", " + f[item.i, item.j] + "|");
     }
     mid = Math.floor(Math.abs(lo + hi) / 2);
     if(f[list[mid].i][list[mid].j] < f[item.i][item.j])
@@ -267,6 +275,7 @@ function Astar(m, heu) { // heu is the heuristic function
     let g = initializeGrid(m.dim);
     let h = initializeGrid(m.dim);
     let f = initializeGrid(m.dim);
+    let t0 = performance.now();
     let goal = v(m.dim - 1, m.dim - 1);
     g[0][0] = 0;
     h[0][0] = heu(path, goal);
@@ -279,6 +288,7 @@ function Astar(m, heu) { // heu is the heuristic function
         opened[index.i][index.j] = false;
         closed[index.i][index.j] = true;
         if(index.i + 1 == m.dim && index.j + 1 == m.dim) {
+            console.log(performance.now() - t0);
             return index;
         }
         for(let i = -1; i <= 1; i++) {
@@ -321,4 +331,42 @@ function Astar(m, heu) { // heu is the heuristic function
                 }
          }
     }
+    console.log(performance.now() - t0);
+}
+
+
+// used to solve question 3
+// dim is the dimension for the experiment
+// dp is delta p
+// pstart is the starting value of p
+// pend is the ending value of p
+// n is number of iterations
+function experimentQ3(dim, dp, pstart, pend, n) {
+    let result = "";
+    for(let p = pstart; p < pend; p+=dp) {
+        let keep = 0;
+        for(let i = 0; i < n; i++) {
+            let m = new map([], p, dim);
+            m.generate();
+            if(solveDFS(m) != undefined) keep++;
+        }
+        console.log(keep);
+        result = result + p + "\t" + keep + "\n";
+    }
+    return result;
+}
+
+function experimentQ4(dim, dp, pstart, pend, n) {
+    let result = "";
+    for(let p = pstart; p < pend; p+=dp) {
+        let keep = 0;
+        for(let i = 0; i < n; i++) {
+            let m = new map([], p, dim);
+            m.generate();
+            if(solveDFS(m) != undefined) keep++;
+        }
+        console.log(keep);
+        result = result + p + "\t" + keep + "\n";
+    }
+    return result;
 }
