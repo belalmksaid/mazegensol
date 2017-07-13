@@ -43,34 +43,34 @@
                     m.draw();
                     m.text();
                     if(selector.value == "DFS") {
-                        let sol = solveDFS(m);
+                        let sol = solveDFS(m)[0];
                         m.drawSolution(sol);
                         m.textSolution(sol);
                     }
                     else if(selector.value == "BFS") {
-                        let sol = solveBFS(m);
+                        let sol = solveBFS(m)[0];
                         m.drawSolution(sol);
                         m.textSolution(sol);
                     }
                     else if(selector.value == "Astarec") {
-                        let sol = Astar(m, euclideanHeuristic);
+                        let sol = Astar(m, euclideanHeuristic)[0];
                         m.drawSolution(sol);
                         m.textSolution(sol);
                     }
                     else if(selector.value == "Astarman") {
-                        let sol = Astar(m, manhattanHeuristic);
+                        let sol = Astar(m, manhattanHeuristic)[0];
                         m.drawSolution(sol);
                         m.textSolution(sol);
                     }
                     else if(selector.value == "all") {
-                        let sol = solveDFS(m);
+                        let sol = solveDFS(m)[0];
                         m.drawSolution(sol);
                         m.textSolution(sol);
                         let m2 = new map(sandbox, parseFloat(pinput.value), parseInt(diminput.value));
                         //m2.generate();
                         m2.create();
                         m2.cells = m.cells;
-                        sol = solveBFS(m2);
+                        sol = solveBFS(m2)[0];
                         m2.draw();
                         m2.text();
                         m2.drawSolution(sol);
@@ -79,7 +79,7 @@
                         //m2.generate();
                         m3.create();
                         m3.cells = m.cells;
-                        sol = Astar(m3, euclideanHeuristic);
+                        sol = Astar(m3, euclideanHeuristic)[0];
                         m3.draw();
                         m3.text();
                         m3.drawSolution(sol);
@@ -88,7 +88,7 @@
                         //m2.generate();
                         m4.create();
                         m4.cells = m.cells;
-                        sol = Astar(m4, manhattanHeuristic);
+                        sol = Astar(m4, manhattanHeuristic)[0];
                         m4.draw();
                         m4.text();
                         m4.drawSolution(sol);

@@ -153,57 +153,65 @@ function v(i, j, p) { // creates a vector
     return new vector(i, j, p);
 }
 
-var ia = [-1, 0, 1, 0];
-var ja = [0, 1, 0, -1];
+var ia = [-1, 0, 0, 1];
+var ja = [0, -1, 1, 0];
 
-function solveDFS(m) { // find goal node using DFS, return undefined if nothing found. This DFS checks left then down, then right, then up
+function solveDFS(m) { // find goal node using DFS, return undefined if nothing found. This DFS checks down then right, then left, then up
     let stack = new Array();
     let visited = createUnvisitedMap(m.dim);
+    let nodecount = 0;
     stack.push(v(0, 0)); // starting node
     let t0 = performance.now();
     while(stack.length > 0) {
         let index = stack.pop();
+        nodecount++;
         if(!visited[index.i][index.j]) {
             visited[index.i][index.j] = true;
             if(index.i + 1 == m.dim && index.j + 1 == m.dim) {
-                console.log(performance.now() - t0);
-                return index;
+                //console.log(performance.now() - t0);
+                return [index, nodecount];
             }
             for(let i = 0; i < 4; i++) {
                 let item = v(index.i + ia[i], index.j + ja[i], index);
                 if(item.i >= 0 && item.j >= 0 && item.i < m.dim && item.j < m.dim) {
-                    if(m.cells[item.i][item.j] != block)
+                    if(m.cells[item.i][item.j] != block) {
                         stack.push(item);
+                    }
                 }
             }
         }
     }
-    console.log(performance.now() - t0);
+    return [undefined];
+    //console.log(performance.now() - t0);
 }
 
 function solveBFS(m) { // find goal node using BFS, return undefined if nothing found
     let queue = new Array();
     let visited = createUnvisitedMap(m.dim);
+    let nodecount = 0;
     queue.push(v(0, 0));
-    let t0 = performance.now();
+    //let t0 = performance.now();
     while(queue.length > 0) {
         let index = queue.shift();
+        nodecount++;
         if(!visited[index.i][index.j]) {
             visited[index.i][index.j] = true;
             if(index.i + 1 == m.dim && index.j + 1 == m.dim) {
-                console.log(performance.now() - t0);
-                return index;
+                //console.log(performance.now() - t0);
+                return [index, nodecount];
             }
             for(let i = 0; i < 4; i++) {
                 let item = v(index.i + ia[i], index.j + ja[i], index);
                 if(item.i >= 0 && item.j >= 0 && item.i < m.dim && item.j < m.dim) {
-                        if(m.cells[item.i][item.j] != block)
+                        if(m.cells[item.i][item.j] != block) {
                             queue.push(item);
+                        }
                     }
                 }
         }
     }
-    console.log(performance.now() - t0);
+    return [undefined];
+    //console.log(performance.now() - t0);
 }
 
 function insert(list, item, f) { // inserts item to a sorted list. Javascript doesn't have a built in sorted list and I don't want to keep resorting
@@ -277,6 +285,7 @@ function Astar(m, heu) { // heu is the heuristic function
     let f = initializeGrid(m.dim);
     let t0 = performance.now();
     let goal = v(m.dim - 1, m.dim - 1);
+    let nodecount = 0;
     g[0][0] = 0;
     h[0][0] = heu(path, goal);
     f[0][0] = g[0][0] + h[0][0];
@@ -288,15 +297,13 @@ function Astar(m, heu) { // heu is the heuristic function
         opened[index.i][index.j] = false;
         closed[index.i][index.j] = true;
         if(index.i + 1 == m.dim && index.j + 1 == m.dim) {
-            console.log(performance.now() - t0);
-            return index;
+            //console.log(performance.now() - t0);
+            return [index, nodecount];
         }
-        for(let i = -1; i <= 1; i++) {
-                for(let j = -1; j <= 1; j++) {
-                    if(i == j || i == -j) continue;
-                    if(index.i + i >= 0 && index.j + j >= 0 && index.i + i < m.dim && index.j + j < m.dim) {
-                        let item = v(index.i + i, index.j + j, index);
-                        if(m.cells[item.i][item.j] != empty) continue;
+        for(let i = 0; i < 4; i++) {
+                let item = v(index.i + ia[i], index.j + ja[i], index);
+                if(item.i >= 0 && item.j >= 0 && item.i < m.dim && item.j < m.dim) {
+                        if(m.cells[item.i][item.j] == block) continue;
                         let scost = g[index.i][index.j] + 1;
                         if(opened[item.i][item.j]) {
                             if(g[item.i][item.i] <= scost) continue;
@@ -321,6 +328,7 @@ function Astar(m, heu) { // heu is the heuristic function
                         }
                         else {
                             opened[item.i][item.j] = true;
+                            nodecount++;
                             g[item.i][item.j] = scost;
                             h[item.i][item.j] = heu(item, goal);
                             f[item.i][item.j] = g[item.i][item.j] + h[item.i][item.j];
@@ -329,11 +337,10 @@ function Astar(m, heu) { // heu is the heuristic function
                         
                     }
                 }
-         }
     }
-    console.log(performance.now() - t0);
+    return [undefined];
+    //console.log(performance.now() - t0);
 }
-
 
 // used to solve question 3
 // dim is the dimension for the experiment
@@ -343,7 +350,7 @@ function Astar(m, heu) { // heu is the heuristic function
 // n is number of iterations
 function experimentQ3(dim, dp, pstart, pend, n) {
     let result = "";
-    for(let p = pstart; p < pend; p+=dp) {
+    for(let p = pstart; p <= pend; p+=dp) {
         let keep = 0;
         for(let i = 0; i < n; i++) {
             let m = new map([], p, dim);
@@ -356,17 +363,137 @@ function experimentQ3(dim, dp, pstart, pend, n) {
     return result;
 }
 
-function experimentQ4(dim, dp, pstart, pend, n) {
+// used to solve question 4 and 5
+// dim is the dimension for the experiment
+// dp is delta p
+// pstart is the starting value of p
+// pend is the ending value of p
+// n is number of iterations
+// solve is the method used to solve it
+// usage: experimentQ4(100, 0.001, 0, 0.3005, 100, solveDFS)
+function experimentQ4(dim, dp, pstart, pend, n, solve) {
     let result = "";
-    for(let p = pstart; p < pend; p+=dp) {
+    for(let p = pstart; p <= pend; p+=dp) {
         let keep = 0;
         for(let i = 0; i < n; i++) {
             let m = new map([], p, dim);
             m.generate();
-            if(solveDFS(m) != undefined) keep++;
+            if(solveDFS(m) == undefined) i--; // if a no solution map is found discard it/
+            sol = solve(m);
+            while(sol != undefined) {
+                keep++;
+                sol = sol.parent;
+            }
         }
-        console.log(keep);
-        result = result + p + "\t" + keep + "\n";
+        console.log(p);
+        result = result + p + "\t" + (keep / n) + "\n";
+    }
+    return result;
+}
+
+// Used for heuristic for Q8
+function maxDistance(a, b) {
+    return Math.max(euclideanHeuristic(a, b), manhattanHeuristic(a, b));
+}
+
+// Used for heuristic for Q8
+function minDistance(a, b) {
+    return Math.min(euclideanHeuristic(a, b), manhattanHeuristic(a, b));
+}
+
+// used to solve question 6 and 7, and parts a and b of 8
+// dim is the dimension for the experiment
+// dp is delta p
+// pstart is the starting value of p
+// pend is the ending value of p
+// n is number of iterations
+// solve is the method used to solve it
+// usage: experimentQ67(100, 0.001, 0, 0.3005, 100, solveDFS)
+function experimentQ67(dim, dp, pstart, pend, n, solve) {
+    let result = "";
+    for(let p = pstart; p <= pend; p+=dp) {
+        let keep = 0;
+        for(let i = 0; i < n; i++) {
+            let m = new map([], p, dim);
+            m.generate();
+            if(solveDFS(m)[0] == undefined) {
+                i--;
+                continue;
+            }
+            let sol = solve(m);
+            if(sol[0] != undefined) keep += sol[1];
+        }
+        result = result + p + "\t" + keep / n + "\n";
+        console.log(p);
+    }
+    return result;
+}
+
+function alphaheu(a, b, alpha) {
+    return alpha * euclideanHeuristic(a, b) + (1 - alpha) * manhattanHeuristic(a, b);
+}
+
+// used to solve parts c of Q 8
+// dim is the dimension for the experiment
+// dp is delta p
+// pstart is the starting value of p
+// pend is the ending value of p
+// n is number of iterations
+// da is how much alpha changes
+// usage: experimentQ67(100, 0.001, 0, 0.3005, 100, solveDFS)
+GLOBA = 0;
+function experimentQ8Alpha(dim, dp, pstart, pend, da, n) {
+    let result = "";
+    for(let a = 0; a <= 1; a += da) {
+        for(let p = pstart; p <= pend; p+=dp) {
+            let keep = 0;
+            for(let i = 0; i < n; i++) {
+                let m = new map([], p, dim);
+                m.generate();
+                if(solveDFS(m)[0] == undefined) {
+                    i--;
+                    continue;
+                }
+                GLOBA = a;
+                let sol = Astar(m, function(aa, bb) {
+                    return alphaheu(aa, bb, GLOBA);
+                });
+                if(sol[0] != undefined) keep += sol[1];
+            }
+            result = result + p + "\t" + a + "\t" + (keep / n) + "\n";
+            console.log(p);
+        }
+    }
+    return result;
+}
+
+function betaheu(a, b, beta) {
+    return  Math.pow(Math.pow(Math.abs(a.i - b.i), beta) + Math.pow(Math.abs(a.j - b.j), beta), 1.0 / beta);
+}
+
+GLOBB = 0;
+function experimentQ8Beta(dim, dp, pstart, pend, db, n) {
+    let result = "";
+    for(let b = 1; b <= 2.005; b += db) {
+        for(let p = pstart; p <= pend; p+=dp) {
+            let keep = 0;
+            for(let i = 0; i < n; i++) {
+                let m = new map([], p, dim);
+                m.generate();
+                if(solveDFS(m)[0] == undefined) {
+                    i--;
+                    continue;
+                }
+                GLOBB = b;
+                let sol = Astar(m, function(aa, bb) {
+                    return betaheu(aa, bb, GLOBB);
+                });
+                if(sol[0] != undefined) keep += sol[1];
+            }
+            console.log(p);
+            result = result + p + "\t" + GLOBB + "\t" + (keep / n) + "\n";
+            
+        }
     }
     return result;
 }
