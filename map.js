@@ -4,13 +4,13 @@ function rectangleB(c, x, y, w, h) { //draws empty rectange
 	c.stroke();
 }
 
-function rectangleF(c, x, y, w, h) {
+function rectangleF(c, x, y, w, h) { //draws filled rectangled
     c.beginPath();
 	c.rect(x, y, w, h);
     c.fill();
 }
 
-function circleB(c, x, y, rad) {
+function circleB(c, x, y, rad) { //draws empty circle
 	c.beginPath();
 	c.arc(x, y, rad, 0, 2 * Math.PI, false);
 	c.closePath();
@@ -156,7 +156,7 @@ function v(i, j, p) { // creates a vector
 var ia = [-1, 0, 0, 1];
 var ja = [0, -1, 1, 0];
 
-function solveDFS(m) { // find goal node using DFS, return undefined if nothing found. This DFS checks down then right, then left, then up
+function solveDFS(m) { // find goal node using DFS, return undefined if nothing found. This DFS checks down, then right, then left, then up
     let stack = new Array();
     let visited = createUnvisitedMap(m.dim);
     let nodecount = 0;
@@ -278,12 +278,12 @@ function initializeGrid(dim) {
 
 function Astar(m, heu) { // heu is the heuristic function
     let open = new Array();
-    let closed = createUnvisitedMap(m.dim);
-    let opened = createUnvisitedMap(m.dim);
-    let g = initializeGrid(m.dim);
-    let h = initializeGrid(m.dim);
-    let f = initializeGrid(m.dim);
-    let t0 = performance.now();
+    let closed = createUnvisitedMap(m.dim); // stores if a node is closed
+    let opened = createUnvisitedMap(m.dim); // stores whether a node is in the opened list since I don't to use the find function since it has a worst case of O(n) compared to O(1) for this
+    let g = initializeGrid(m.dim); // stores g values
+    let h = initializeGrid(m.dim); // stores h values
+    let f = initializeGrid(m.dim); // stores f values
+    //let t0 = performance.now();
     let goal = v(m.dim - 1, m.dim - 1);
     let nodecount = 0;
     g[0][0] = 0;
@@ -300,7 +300,7 @@ function Astar(m, heu) { // heu is the heuristic function
             //console.log(performance.now() - t0);
             return [index, nodecount];
         }
-        for(let i = 0; i < 4; i++) {
+        for(let i = 0; i < 4; i++) { // traverse the 4 directions
                 let item = v(index.i + ia[i], index.j + ja[i], index);
                 if(item.i >= 0 && item.j >= 0 && item.i < m.dim && item.j < m.dim) {
                         if(m.cells[item.i][item.j] == block) continue;
